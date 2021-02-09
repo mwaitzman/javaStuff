@@ -1,9 +1,14 @@
+package com.github.mwaitzman.jutils;
+
 import java.util.LinkedList;
 import java.util.BitSet;
+import java.util.Arrays;
+import java.lang.Class;
+import com.github.mwaitzman.jutils.Utils;
+
 public class LargeArrayShuffler {
 
-  public static Object[] shuffleArray(Object[] objArr) {
-    Class ObjClass = objArr.getClass();
+  public static <T> T[] shuffleArray(T[] objArr) {
     final int arrLength = objArr.length;
 
     int[] destIndex = new int[arrLength];
@@ -20,10 +25,11 @@ public class LargeArrayShuffler {
   LinkedList<Integer> chainStarts = new LinkedList<Integer>();
   int s = 0;
   LinkedList<Integer> chainSize = new LinkedList<Integer>();
-    ObjClass tempObj = objArr[i].clone();
+    Class<?> ObjClass = objArr[0].getClass();
+    ObjClass tempObj = objArr[n].clone();
     bs.set(0, true);
     while(n < arrLength && incomplete > 0) {
-      preChain = new LinkedList<Integer>(incomplete);
+      preChain = new LinkedList<Integer>();
       n = bs.nextClearBit(n);
       chainStarts.add(n);
       preChain.add(destIndex[n]);
@@ -33,7 +39,7 @@ public class LargeArrayShuffler {
         bs.set(preChain.getLast(), true);
       }
       chainSize.add(preChain.size()-1);
-      preChain.toArray(order);//how to append this to the end of the filled elements in the array?
+      order = preChain.toArray();//how to append this to the end of the filled elements in the array?
       incomplete -= preChain.size();
       preChain = null;
     }
@@ -46,17 +52,16 @@ public class LargeArrayShuffler {
     ObjClass tempObj; //= objArray[order[savepoints[0]].clone();
     while (completed < savepoints.length) {
       tempObj = objArray[order[savepoints[completed]]].clone();
-      if (order[savepoints[completed]] == order[savepoints[completed]+chainSize[completed]]) {
+      if (order[savepoints[completed]] == order[savepoints[completed]+chainSize.get(completed)]) {
 
         objArr = addToOutput(destIndex, Arrays.asList(order).subList(chainStarts[completed], sizes[completed]).toArray(Object[]::new), objArr);
-        objArr[order[savepoints[completed]]+chainsize[completed]] = tempObj;
+        objArr[order[savepoints[completed]]+chainSize.get(completed)] = tempObj;
       }
       else {
         objArr = addToOutput(destIndex, Arrays.asList(order).subList(chainStarts[completed], sizes[completed]).toArray(Object[]::new), objArr);
       }
       completed++;
     }
-
     return ObjArr;
   }
 
@@ -81,11 +86,12 @@ public class LargeArrayShuffler {
     int temp;
     int[] newPos = new int[ints.length];
     for (int i = ints.length; i > 0; i --) {
-      temp = computePosition(randomInt(i), availability);
+      temp = computePosition(Utils.randomInt(i), availability);
       availability.set(temp, true);
       newPos[i] = temp;
     }
     newPos[0] = computePosition(0, availability);
     return newPos;
   }
+
 }
